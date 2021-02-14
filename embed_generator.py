@@ -7,8 +7,8 @@ from discord.ext import commands
 class EmbedGenerator:
 
     def __init__(self):
-        self.__stages = JSONStorage("stages.json")
-        self.__sequences = JSONStorage("sequences.json")
+        self.__stages = JSONStorage("data/stages.json")
+        self.__sequences = JSONStorage("data/sequences.json")
 
 
     ### GENERATING THE FIXTURES ###
@@ -83,9 +83,9 @@ class EmbedGenerator:
         "Changes the score of a team to 'W' if it didn't forfeit or 'FF' if it did."
 
         if team["forfeit"]:
-            match["score"] = "FF"
+            team["score"] = "FF"
         else:
-            match["score"] = "W"
+            team["score"] = "W"
 
 
     def __get_match_info(self, match):
@@ -104,11 +104,13 @@ class EmbedGenerator:
             "home_team": {
                 "name": home_team["participant"]["name"],
                 "emote": home_team["participant"]["custom_fields"]["emote"],
+                "short": home_team["participant"]["custom_fields"]["short_name"],
                 "score": home_team["score"]
             },
             "away_team": {
                 "name": away_team["participant"]["name"],
                 "emote": away_team["participant"]["custom_fields"]["emote"],
+                "short": away_team["participant"]["custom_fields"]["short_name"],
                 "score": away_team["score"]
             }
         }
@@ -122,8 +124,18 @@ class EmbedGenerator:
         home_emote = self.__find_emote_id(guild, home_team)
         away_emote = self.__find_emote_id(guild, away_team)
 
-        home_str = f"{home_team['name']} {home_emote}"
-        away_str = f"{away_emote} {away_team['name']}"
+        if home_team["short"] is None:
+            home_name = home_team["name"]
+        else:
+            home_name = home_team["short"]
+
+        if away_team["short"] is None:
+            away_name = away_team["name"]
+        else:
+            away_name = away_team["short"]
+
+        home_str = f"{home_name} {home_emote}"
+        away_str = f"{away_emote} {away_name}"
 
     
         if match["status"] == "pending":
@@ -197,7 +209,11 @@ class EmbedGenerator:
         if rank is None:
             rank = team['position']
 
-        name   = team['participant']['name']
+        name = team["participant"]["custom_fields"]["short_name"]
+
+        if name is None:
+            name   = team['participant']['name']
+            
         wins   = team['properties']['wins']
         losses = team['properties']['losses']
         diff   = team['properties']['score_difference']

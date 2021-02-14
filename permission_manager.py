@@ -6,7 +6,7 @@ from discord.ext import commands
 class PermissionManager:
 
     def __init__(self):
-        self.__roles = JSONStorage("roles.json")
+        self.__roles = JSONStorage("data/roles.json")
 
     def add_role(self, role: discord.Role):
         role_info = {
